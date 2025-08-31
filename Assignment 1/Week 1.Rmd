@@ -1,0 +1,34 @@
+---
+title: "DATA 607 Week 1 Assignment"
+author: "James Chun"
+date: "August 30, 2025"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<br>
+
+## Introduction
+The data presented in this markup was scrapped from the site https://mykbostats.com/players/ and placed into a csv file beforehand. The csv file can be found in the following github repo titled as "KBO_Batters.csv": https://github.com/Ryungje/DATA607/Assignment 1/
+
+I had initially collected this data during a personal project in which I wanted to create a predictive model for KBO baseball player performance. Though the project did not get very far, the data I had collected is still very useful.  
+
+<br>
+
+## Import File from CSV 
+This is large data set, as seen from the dimensions.
+```{r}
+batters <- read.csv("KBO_Batters.csv")
+dim(batters)
+```
+## Create Subset
+For our current purposes, we only care about players yearly Team, On-Base Percentage (OBP), Slugging Average (SLG), and OPS. 
+```{r}
+batters <- batters[c('Name', 'Team', 'Year', 'OBP', 'SLG', 'OPS')]
+```
+
