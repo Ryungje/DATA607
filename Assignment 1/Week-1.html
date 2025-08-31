@@ -362,7 +362,7 @@ display: none;
 <h2>Introduction</h2>
 <p>The data presented in this markup was scrapped from the site <a href="https://mykbostats.com/players/" class="uri">https://mykbostats.com/players/</a> and placed into a csv
 file beforehand. The csv file can be found in the following github repo
-titled as “KBO_Batters.csv”: <a href="https://github.com/Ryungje/DATA607/Assignment" class="uri">https://github.com/Ryungje/DATA607/Assignment</a> 1/</p>
+titled as “KBO_Batters.csv”: <a href="https://github.com/Ryungje/DATA607/tree/main/Assignment%201" class="uri">https://github.com/Ryungje/DATA607/tree/main/Assignment%201</a></p>
 <p>I had initially collected this data during a personal project in
 which I wanted to create a predictive model for KBO baseball player
 performance. Though the project did not get very far, the data I had
@@ -373,14 +373,50 @@ collected is still very useful.</p>
 <h2>Import File from CSV</h2>
 <p>This is large data set, as seen from the dimensions.</p>
 <pre class="r"><code>batters &lt;- read.csv(&quot;KBO_Batters.csv&quot;)
-dim(batters)</code></pre>
-<pre><code>## [1] 5181   28</code></pre>
+head(batters)</code></pre>
+<pre><code>##           Name Year         Team    BA   OBP   SLG   OPS  G  PA  AB  R  H X2B
+## 1 Ko Young-min 2016 Doosan Bears 0.250 0.400 0.500 0.900  8   5   4  1  1   1
+## 2 Ko Young-min 2015 Doosan Bears 0.328 0.403 0.478 0.881 41  77  67 13 22   1
+## 3 Ko Young-min 2014 Doosan Bears 0.287 0.355 0.340 0.695 52 108  94 18 27   2
+## 4 Ko Young-min 2013 Doosan Bears 0.286 0.412 0.571 0.983 10  17  14  3  4   1
+## 5 Ko Young-min 2012 Doosan Bears 0.265 0.335 0.404 0.739 58 173 151 33 40  10
+## 6 Ko Young-min 2011 Doosan Bears 0.210 0.305 0.301 0.606 93 208 176 31 37   5
+##   X3B HR RBI SB CS BB SO TB GDP HBP SH SF IBB RISP  PHBA
+## 1   0  0   1  0  0  1  1  2   0   0  0  0   0 0.50 0.333
+## 2   0  3  11  4  2  6 22 32   4   3  0  1   0 0.24 0.444
+## 3   0  1   7  1  1 11 18 32   3   0  1  2   0 0.20 0.294
+## 4   0  1   1  1  0  3  5  8   1   0  0  1   0 0.25 0.333
+## 5   1  3  26  7  1 13 28 61   5   3 NA NA  NA   NA    NA
+## 6   1  3  16  6  6 18 50 53   4   7 NA NA  NA   NA    NA</code></pre>
 </div>
 <div id="create-subset" class="section level2">
 <h2>Create Subset</h2>
 <p>For our current purposes, we only care about players yearly Team,
 On-Base Percentage (OBP), Slugging Average (SLG), and OPS.</p>
-<pre class="r"><code>batters &lt;- batters[c(&#39;Name&#39;, &#39;Team&#39;, &#39;Year&#39;, &#39;OBP&#39;, &#39;SLG&#39;, &#39;OPS&#39;)]</code></pre>
+<pre class="r"><code>batters &lt;- batters[c(&#39;Name&#39;, &#39;Team&#39;, &#39;Year&#39;, &#39;OBP&#39;, &#39;SLG&#39;, &#39;OPS&#39;)]
+head(batters)</code></pre>
+<pre><code>##           Name         Team Year   OBP   SLG   OPS
+## 1 Ko Young-min Doosan Bears 2016 0.400 0.500 0.900
+## 2 Ko Young-min Doosan Bears 2015 0.403 0.478 0.881
+## 3 Ko Young-min Doosan Bears 2014 0.355 0.340 0.695
+## 4 Ko Young-min Doosan Bears 2013 0.412 0.571 0.983
+## 5 Ko Young-min Doosan Bears 2012 0.335 0.404 0.739
+## 6 Ko Young-min Doosan Bears 2011 0.305 0.301 0.606</code></pre>
+</div>
+<div id="find-best-ops" class="section level2">
+<h2>Find Best OPS</h2>
+<p>In the simplest way, I shall find the player (disregarding year and
+team) with the highest OPS.</p>
+<pre class="r"><code>batters[which.max(batters$OPS),]</code></pre>
+<pre><code>##          Name             Team Year OBP SLG OPS
+## 2984 Heo Joon Hyundai Unicorns 2006   1   4   5</code></pre>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>There are many, and quite complicated, ways to measure a baseball
+player’s performance. The methods presented here are trivial and does
+not take into account nearly all the data that is available per player.
+But with that said, the best player in the KBO is Heo Joon.</p>
 </div>
 
 
