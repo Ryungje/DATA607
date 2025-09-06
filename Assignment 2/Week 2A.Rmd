@@ -1,0 +1,86 @@
+---
+title: "Week 2A Assignment"
+author: "James Chun"
+date: "September 5, 2025"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Movie Reviews
+
+## Install packages
+```{r}
+#install.packages("RSQL")
+#install.packages("RSQLite")
+#install.packages("tidyverse")
+ 
+library(RSQL) #Generate and Process 'SQL' Queries in R
+library(RSQLite) #Can create an in-memory SQL database
+library(tidyverse) #Provides helpful functions and sample data to use in R
+```
+## collect and store data in R dataframe
+The reviews are stored in one dataframe, with missing reviews recorded as NA
+
+If the friend did not have a review, their response as to why not was recorded. The second dataframe simply collects strings as responses. 
+
+```{r}
+# make r dataframe with movie reviews out of 10
+movierev <- data.frame(
+  "Inception" = c(9, 9.5, 9.5, NA, 9.9), 
+  "Interstellar" = c(9.5, 9, 7.5, 7.5, NA), 
+  "Puss in Boots" = c(9, 7.5, 5.5, 6, 7.5), 
+  "Elvis" = c(5, 4, NA, NA, 6.2), 
+  "Prisoners" = c(5.5, 6, 5.5, 2, 0), 
+  row.names=c("Dave", "John", "Jorge", "Lydia", "Steven")
+  )
+
+# make dataframe for responses if they didn't watch movie
+whynot <- data.frame(
+  "Inception" = c(NA, NA, NA, "didn't have the time", NA), 
+  "Interstellar" = c(NA, NA, NA, NA, "Not interested"), 
+  "Puss in Boots" = c(NA, NA, NA, NA, NA), 
+  "Elvis" = c(NA, NA, "I actually watched it but fell asleep", "I don't like animation", NA), 
+  "Prisoners" = c(NA, NA, NA, NA, NA), 
+  "Pacific Rim" = c(10, 9.5, 7.8, "I got motion sick watching it and had to turn it off", "ew the monsters look weird"), 
+  row.names=c("Dave", "John", "Jorge", "Lydia", "Steven"))
+
+```
+
+## SQL Database
+
+```{r}
+# initialize database
+movie_reviews <- dbConnect(drv = RSQLite::SQLite(),
+                 dbname = ":memory:")
+
+# Load movie reviews
+dbWriteTable(conn = movie_reviews,
+             name = "movie reviews",
+             value = movierev)
+
+# Load alternative responses
+dbWriteTable(conn = movie_reviews,
+             name = "response",
+             value = whynot)
+
+
+dbListTables(movie_reviews)
+
+```
+
+## Open Tables from SQL
+
+```{r}
+#Confirming data in database is as intended
+dbReadTable(movie_reviews, "movie reviews")
+
+dbReadTable(movie_reviews, "response")
+```
+
+
+
+
+

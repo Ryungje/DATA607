@@ -1,0 +1,178 @@
+---
+title: "DATA 607 Week 2 Assignment"
+author: "James Chun"
+date: "September 5, 2025"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+
+```{r}
+# Before starting, read csv's
+
+# classification model performance
+class_perf <- read.csv("classification_model_performance.csv")
+
+# penguin_predictions
+pen_pred <- read.csv("penguin_predictions.csv")
+
+```
+
+
+## Question 1
+
+```{r}
+
+class_zero <- sum(class_perf$class == 0) #the number of instances of class 1
+class_one <- sum(class_perf$class == 1) #the number of instances of class 0
+
+```
+
+Class_zero has more instances, and thus is the majority
+
+
+```{r}
+# Calculate the null error rate
+
+class_one / (class_one + class_zero) 
+```
+
+Overall, the null error rate is important because it cautions against the model showing bias towards the majority class. If one class appears incredibly more often than another, then the model becomes more tempted to guess the dominant class for all predictions. It can also be used a metric in training the model to actually predict for the minority class. 
+
+
+```{r}
+ggplot(class_perf) + 
+  geom_bar(aes(x=class))
+```
+
+
+## Question 2
+
+```{r}
+# Lots of repetitive code so defining some functions
+
+create_confusion <- function(data){
+  temp <- data %>%
+    mutate(
+      TP = case_when(
+        (.pred_class == "female") & (sex == "female") ~ 1,
+        TRUE ~ 0 # Default case for all other scores
+      ),
+      FP = case_when(
+        (.pred_class == "female") & (sex == "male") ~ 1,
+        TRUE ~ 0
+      ),
+      FN = case_when(
+        (.pred_class == "male") & (sex == "female") ~ 1,
+        TRUE ~ 0
+      ),
+      TN = case_when(
+        (.pred_class == "male") & (sex == "male") ~ 1,
+        TRUE ~ 0
+      )
+    )
+  
+  return(temp)
+}
+
+change_thresh <- function(data, threshold){
+  temp <- data %>%
+    mutate(
+      .pred_class = case_when(
+        .pred_female >= threshold ~ "female",
+        TRUE ~ "male" # Default case for all other scores
+      )
+    )
+  
+  return(temp)
+}
+
+make_matrix <- function(data){
+  temp <- data.frame(
+    TP = sum(data$TP),
+    FP = sum(data$FP),
+    FN = sum(data$FN),
+    TN = sum(data$TN)
+  )
+  
+  return(temp)
+}
+```
+
+
+
+```{r}
+# .pred_female threshold 0.5 (the given dataset already ues 0.5 threshold)
+
+pen_pred <- create_confusion(pen_pred)
+```
+
+
+```{r}
+# .pred_female threshold 0.2
+pen_pred_two <- change_thresh(pen_pred, 0.2)
+
+pen_pred_two <- create_confusion(pen_pred_two)
+```
+
+```{r}
+# .pred_female threshold 0.8
+pen_pred_eight <- change_thresh(pen_pred, 0.8)
+
+pen_pred_eight <- create_confusion(pen_pred_eight)
+```
+
+```{r}
+# Make confusion matrices
+
+pred_two <- make_matrix(pen_pred_two)
+
+pred_five <- make_matrix(pen_pred)
+
+pred_eight <- make_matrix(pen_pred_eight)
+
+# The actual confusion matrices can be seen at end of pdf
+```
+
+## Question 3
+
+```{r}
+# accuracy, precision, recall, and F1 scores
+
+#Caluclate the confusion metrics
+analyze <- function(data){
+  accuracy <- sum(data$TP, data$TN) / sum(data)
+  precision <- data$TP / sum(data$TP, data$FP)
+  recall <- data$TP / sum(data$TP, data$FN)
+  f_one <- (2 * precision * recall) / (precision + recall)
+  
+  temp <- c(accuracy, precision, recall, f_one)
+}
+
+two_nums <- analyze(pred_two)
+five_nums <- analyze(pred_five)
+eight_nums <- analyze(pred_eight)
+
+numbers <- data.frame(
+  threshold = c(0.2, 0.5, 0.8),
+  accuracy = c(two_nums[1], five_nums[1], eight_nums[1]),
+  precision = c(two_nums[2], five_nums[2], eight_nums[2]),
+  recall = c(two_nums[3], five_nums[3], eight_nums[3]),
+  F1 = c(two_nums[4], five_nums[4], eight_nums[4])
+)
+
+numbers
+```
+
+
+## Question 4
+
+a) Using a 0.2 threshold would be better in the case of disease screening. Since it always preferred to get a False Positive compared to a False Negative.
+
+b) 0.8 threshold would be better for fraud or spam screenings, as the event of accidentally flagging a genuine transaction or interaction as fake is not preferred over having more spam coming through. 
