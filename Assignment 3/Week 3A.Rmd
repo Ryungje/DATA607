@@ -1,0 +1,66 @@
+---
+title: "Week 3A"
+author: "James Chun"
+date: "September 13, 2025"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Create Global Baseline Functions
+
+## Import Libraries
+```{r}
+# import tidyverse
+# install.packages("readxl")
+library(readxl)
+library(tidyverse)
+library(glue)
+```
+
+## Import Data
+```{r}
+# Import data provided in class
+MovieRatings <- read_excel("MovieRatings.xlsx")
+MovieRatings <- data.frame(select(MovieRatings, -1), row.names=MovieRatings$Critic)
+
+# Import personal collected data
+movie_reviews <- read.csv("movie_reviews.csv", row.names=1)
+
+```
+
+## Define Global Base Function
+
+```{r}
+globalBase <- function(data, name, movie){
+  mean_movie <- sum(data, na.rm=TRUE) / sum(!is.na(data))
+  
+  movie_relative <- mean(data[[movie]], na.rm = TRUE) - mean_movie
+  
+  person_relative <- rowMeans(data, na.rm=TRUE)[[name]] - mean_movie
+
+  result <- (mean_movie + movie_relative + person_relative) %>% round(2)
+  
+  return(result)
+}
+```
+
+
+## Testing
+
+```{r}
+# Testing with class example, Param and Pitch Perfect, should return 2.28
+test <- globalBase(MovieRatings, "Param", "PitchPerfect2")
+glue("Param Expected: 2.28 \n Param Actual: {test}")
+
+
+# Using algorithm on my collected data
+
+test2 <- globalBase(movie_reviews, "Dave", "Elvis")
+glue("My Expected: 5.95 \n My Actual: {test2}")
+```
+
