@@ -1,0 +1,93 @@
+---
+title: "Week 3B"
+author: "James Chun"
+date: "September 13, 2025"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Window Functions
+
+## Load Libraries
+
+```{r}
+# import(tidyverse)
+library(tidyverse)
+library(glue)
+
+```
+
+## Load Data
+
+```{r}
+delhi_data <- read.csv("DailyDelhiClimateTrain.csv")
+```
+
+## Define Year to Date Function
+
+```{r}
+yearToDate <- function(data, end, col) {
+  # Ensure dates in date column are of Date type
+  data <- data %>% mutate(date = ymd(data$date))
+  
+  # Subset data from beginning of year to given date
+  subset_data <- data[data$date <= end, ,drop = FALSE]
+  
+  # Find the mean for target column
+  mean_temp <- mean(subset_data[[col]], na.rm = TRUE)
+  
+  return(mean_temp)
+}
+
+```
+
+## Testing YTD
+
+```{r}
+# Testing 
+
+date1 <- ymd("2013-02-01")
+test <- yearToDate(delhi_data, date1, "humidity") %>%
+  round(2)
+
+glue("Expected YTD Result: 73.02 \n Actual Result: {test}")
+
+```
+
+
+## Define 6 Day Average Function
+
+```{r}
+sixDayAvg <- function(data, start_date, col) {
+  # Ensure dates in date column are of Date type
+  data <- data %>% mutate(date = ymd(data$date))
+  
+  # Define the 6-day window
+  end_date <- start_date + 5
+  
+  # Subset the data for those 6 days
+  subset_data <- data[data$date >= start_date & data$date <= end_date, , drop = FALSE]
+  
+  # Find mean for column
+  mean_temp <- mean(subset_data[[col]], na.rm = TRUE)
+  
+  return(mean_temp)
+}
+
+```
+
+
+## Testing 6 Day Avg
+
+```{r}
+date2 <- ymd("2013-02-01")
+test2 <- sixDayAvg(delhi_data, date2, "humidity") %>%
+  round(2)
+
+glue("Expected 6 Day Result: 75.68 \n Actual Result: {test2}")
+
+```
+
