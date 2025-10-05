@@ -1,0 +1,224 @@
+---
+title: "Project 2"
+author: "James Chun"
+date: "October 3, 2025"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Project 2
+## Tidying Datasets
+
+
+## Import Packages
+```{r warning=FALSE}
+library(tidyverse)
+library(dplyr)
+```
+
+
+## Untidy Data 1
+Travel Expense Report
+Posted by: Escarlet Gabriel Vicente
+Data Analysis Suggestions: "If tidied, the data could be used to analyze average expenses by city, compare spending across categories, or track changes in daily travel costs."
+Tidy Data
+```{r warning=FALSE}
+# Import untidy data
+expense_report <- read.csv("Travel Expense Report.csv")
+
+# Remove unnecessary rows and columns
+expense_report <- expense_report %>%
+  filter(!(X %in% c("Totals", "subtotals"))) %>% #remove rows
+  select(-"subtotals") %>% #remove columns
+  rename(Dates = X) %>% # rename X column
+  mutate(Location=NA) # Add extra column for Location
+
+# Fill Location column
+expense_report <- expense_report %>%
+  mutate(
+    # Check if the Dates column looks like a date or not
+    is_location = is.na(dmy(Dates)),
+    
+    # If it's a location, store it; else NA
+    Location = ifelse(is_location, Dates, NA)
+  ) %>%
+  fill(Location) %>%
+  filter(!is_location) %>% # remove location rows
+  select(-is_location) # remove helper column
+
+# Convert dates to Dates
+expense_report <- expense_report %>%
+  mutate(Dates = as.Date(expense_report$Dates, "%d-%b-%y"))
+```
+
+Perform Data Analysis
+
+```{r warning=FALSE}
+# 1. Average spending per location by category
+expense_report %>%
+  group_by(Location) %>%
+  summarise(
+    avg_meals = mean(Meals),
+    avg_hotels = mean(Hotels),
+    avg_transport = mean(Transport)
+  )
+
+```
+
+```{r warning=FALSE}
+# 2. Total spending per location by category
+expense_report %>%
+  group_by(Location) %>%
+  summarise(
+    total_Meals = sum(Meals),
+    total_Hotels = sum(Hotels),
+    total_Transport = sum(Transport)
+  )
+```
+
+
+## Untidy Data 2
+US Labor Statistics
+Posted by: Jacob Shapiro
+Data Analysis Suggestions: "An analysis that could be done is which county in each state has the highest difference between "Civilian labor force" and "Unemployed". Could also use a graph to show percent of unemployment per state."
+
+```{r warning=FALSE}
+# Import US Labor Statistics CSV, skip headers
+us_labor <- read.csv("US Labor Statistics.csv", skip=3)
+
+# Remove last 4 columns which are percentages
+us_labor <- us_labor %>%
+  select(-c("X2024.2", "X2025.1", "X2024.3", "X2025.p..1"))
+
+
+# Temporary column names
+colnames(us_labor) <- c("City", "Civilian Labor Force_July 2024", 
+                        "Civilian Labor Force_July 2025", 
+                        "Civilian Labor Force_August 2024", 
+                        "Civilian Labor Force_August 2025", 
+                        "Unemployed_July 2024",
+                        "Unemployed_July 2025", 
+                        "Unemployed_August 2024",
+                        "Unemployed_August 2025")
+
+# Reshape to long
+us_labor <- us_labor %>%
+  pivot_longer(
+    cols = -"City",
+    names_to = "Category_Month_Year",
+    values_to = "Value"
+  )
+
+# Extract information from "Category_Month_Year" column
+us_labor <- us_labor %>%
+  separate(Category_Month_Year,
+           into = c("Category", "Month_Year"),
+           sep = "_", extra = "merge", fill = "right")
+
+```
+
+Separate State and City columns
+
+```{r warning=FALSE}
+us_labor$State <- NA
+
+us_labor <- us_labor %>%
+  mutate(
+    # Check if the States column is actually state
+    is_state = City %in% state.name,
+    
+    # If yes, store it; else NA
+    State = ifelse(is_state, City, NA)
+  ) %>%
+  fill(State) %>%
+  filter(!is_state) %>% # remove location rows
+  select(-is_state) # remove helper column
+
+
+# Make a little wider and clean Month_Year
+us_labor <- us_labor %>%
+  pivot_wider(
+    names_from = Category,
+    values_from = Value
+  ) %>% 
+  select(State, City, everything()) # reorder columns
+```
+
+Data Analysis
+
+```{r warning=FALSE}
+# Making plot
+ggplot(us_labor, aes(x = Month_Year, y = Unemployed, color = City, group = City)) +
+  geom_line() +
+  labs(
+    title = "Unemployment Trend by City",
+    x = "Month",
+    y = "Unemployed"
+  )
+
+#Making plot for one month
+us_labor %>%
+  filter(Month_Year == "July 2024") %>%
+  ggplot(aes(x = reorder(City, Unemployed), y = Unemployed, fill = State)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    title = "Unemployed by City (August 2025)",
+    x = "City",
+    y = "Unemployed"
+  )
+```
+
+## Untidy Data 3
+Country Data
+Posted by: Taha Malik
+
+Data Analysis Suggestions: "Compare GDP growth across countries over time. Analyze population growth rates and their relationship with GDP changes. Create visualizations such as line charts showing GDP per capita trends from 2000 to 2010."
+
+```{r warning=FALSE}
+country_data <- read.csv("Country Data.csv")
+
+colnames(country_data) <- c("Country", "2000 Population", "2000 GDP",
+                            "2005 Population", "2005 GDP",
+                            "2010 Population", "2010 GDP")
+
+# Reshape to long
+country_data <- country_data %>%
+  pivot_longer(
+    cols = -"Country",
+    names_to = "Year_Category",
+    values_to = "Value"
+  )
+
+# Extract information from "Year_Category" column
+country_data <- country_data %>%
+  separate(Year_Category,
+           into = c("Year", "Category"),
+           sep = " ", extra = "merge", fill = "right")
+
+# Make a little wider
+country_data <- country_data %>%
+  pivot_wider(
+    names_from = Category,
+    values_from = Value
+  )
+```
+
+Data Analysis
+
+```{r warning=FALSE}
+ggplot(country_data, aes(x = Year, y = GDP, color = Country, group = Country)) + 
+  geom_line(size=2) +
+  labs(
+    title = "GDP by Country",
+    x = "Year",
+    y = "GDP"
+  )
+```
+
