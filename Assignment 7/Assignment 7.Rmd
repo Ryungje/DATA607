@@ -22,22 +22,29 @@ The Bible by James, Paul, King David, and others - epic, dense, and great plot t
 Technically the Bible is a collection of books, but since everyone publishes and refers to it as one book I will use that to my advantage.  
   
 ## Load Libraries
-```{r message=FALSe}
+```{r message=FALSE}
 library(xml2)
 library(jsonlite)
 library(rvest)
+library(RCurl)
+library(dplyr)
+library(tidyverse)
+library(purrr)
 ```
 
 
 
 ## Reading the book files
 ```{r}
-books_xml <- read_xml("books.xml") %>%
+books_xml <- getURL("https://raw.githubusercontent.com/Ryungje/DATA607/refs/heads/main/Assignment%207/books.xml") %>% 
+  read_xml("books.xml") %>%
   xml_find_all(".//book")
 
-books_json <- fromJSON("books.json")
+books_json <- getURL("https://raw.githubusercontent.com/Ryungje/DATA607/refs/heads/main/Assignment%207/books.json") %>%
+  fromJSON("books.json")
 
-books_html <- read_html("books.html")
+books_html <- getURL("https://raw.githubusercontent.com/Ryungje/DATA607/refs/heads/main/Assignment%207/books.html") %>%
+  read_html("books.html")
 
 ```
 
@@ -54,13 +61,15 @@ html_df <- books_html %>%
   html_table()
 
 # JSON
-json_df <- as.data.frame(books_json$books)
-json_df$authors <- ifelse(
-    !is.na(json_df$author),
-    json_df$author,
-    json_df$authors
+json_df <- books_json$books %>%
+  map_dfr(function(book) {
+  tibble(
+    title = book$title,
+    authors = list(book$author %||% book$authors),
+    attributes = list(book$attributes)
   )
-json_df$author <- NULL
+})
+
 
 # XML
 xml_df <- data.frame(title = xml_text(xml_find_all(books_xml, "./title")),
