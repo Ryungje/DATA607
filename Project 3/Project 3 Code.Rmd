@@ -18,6 +18,7 @@ Load libraries and packages as necessary.
 library(tidyverse)
 library(DBI)
 library(RCurl)
+library(stringr)
 ```
 
 ## Import Raw Data
@@ -81,13 +82,15 @@ DS_job_postings <- left_join(DS_job_postings, DS_job_skills, by = "job_link")
 DS_job_postings <- DS_job_postings %>%
   mutate(job_skills = str_split(job_skills, ",")) %>%  # Split skill string into list
   unnest(job_skills) %>%                               # Expand list into rows
-  mutate(job_skills = str_trim(job_skills))            # Trim whitespace
+  mutate(job_skills = str_trim(job_skills)) %>%        # Trim whitespace
+  mutate(job_skills = str_to_title(job_skills))        # Tidy skills to be capitalized
 
 # Also convert DS_job_skills to long
 DS_job_skills <- DS_job_skills %>%
   mutate(job_skills = str_split(job_skills, ",")) %>%  # Split skill string into list
   unnest(job_skills) %>%                               # Expand list into rows
-  mutate(job_skills = str_trim(job_skills))            # Trim whitespace
+  mutate(job_skills = str_trim(job_skills)) %>%        # Trim whitespace
+  mutate(job_skills = str_to_title(job_skills))        # Tidy skills to be capitalized
 ```
 
 We will then work on tidying ***LI_job_postings***. First, we will edit ***LI_job_skills*** to represent the actual names and not *skill_abr*. Secondly, we will merge the respective skills into ***jobs_postings2*** according to *job_id*. Lastly, we will trim the unneeded columns from ***LI_job_postings***.
@@ -118,13 +121,15 @@ Now that the data is tidied, we can proceed with some data analysis.
 
 ### Quick Graphs
 
+These two graphs are simple bar graphs which display the most frequently appearing skills from each data set.  
+
 ```{r}
 # Data Science Skills
-temp <- DS_job_skills %>%
+DS_job_skills %>%
   count(job_skills, sort = TRUE) %>%
-  slice_head(n = 10)
+  slice_head(n = 10) %>%
 
-ggplot(temp, aes(x = reorder(job_skills, n), y = n)) +
+  ggplot(aes(x = reorder(job_skills, n), y = n)) +
   geom_bar(stat = "identity", fill = "lightblue") +
   coord_flip() + 
   labs(x= "Data Science Job Skills", y = "Count", title = "Data Science Skills in Job Postings")
@@ -132,17 +137,25 @@ ggplot(temp, aes(x = reorder(job_skills, n), y = n)) +
 
 ```{r}
 # LinkedIn Skills
-temp2 <- LI_job_skills %>%
+LI_job_skills %>%
   count(job_skills, sort = TRUE) %>%
-  slice_head(n = 10)
-
-ggplot(temp2, aes(x = reorder(job_skills, n), y = n)) +
+  slice_head(n = 10) %>%
+  
+  ggplot(aes(x = reorder(job_skills, n), y = n)) +
   geom_bar(stat = "identity", fill = "tomato") +
   coord_flip() +
   labs(x= "LinkedIn Job Skills", y = "Count", title = "LinkedIn Skills in Job Postings")
 ```
 
 ```{r}
-temp3 <- unique(DS_job_skills$job_skills)
+temp <- DS_job_postings %>%
+  filter(str_detect(job_skills, "Data"))
 ```
+
+
+
+## Scracth Notes
+
+For ***DS_job_skills*** (and the corresponding column in ***DS_job_postings***) Dataset, the listed skills are messy and there are semantic differences. For example, "Data Analysis" and "Data Analyst" appear separately, but mean the same thing. 
+
 
