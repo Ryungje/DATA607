@@ -1,0 +1,116 @@
+---
+title: "Project 3 Code"
+author: "James Chun, Haoming Chen, Pricilla Nakyazze"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Libraries
+Load libraries and packages as necessary.  
+
+```{r message=FALSE}
+library(tidyverse)
+library(DBI)
+#library(RmySQL)
+```
+
+## Import Raw Data
+The original sources, as stated in the proposal, are found on the following sites: <br>
+https://www.kaggle.com/datasets/arshkon/linkedin-job-postings/data <br>
+https://www.kaggle.com/datasets/asaniczka/data-science-job-postings-and-skills/data <br>
+
+Note that not all provided datasets from the orignal sources were used. As the priority of this project are the job postings and their respective job skills, files not relevant were excluded.
+
+
+```{r}
+# "Data Science Postings (2024)" Dataset
+
+job_postings <- read.csv("Data Science Job Postings & Skills (2024)/job_postings.csv")
+job_posting_skills <- read.csv("Data Science Job Postings & Skills (2024)/job_skills.csv")
+
+
+# "LinkedIn Postings (2023-2024)" Dataset 
+
+job_postings2 <- read.csv("LinkedIn Job Postings (2023 - 2024)/postings.csv")
+job_posting_skills2 <- read.csv("LinkedIn Job Postings (2023 - 2024)/job_skills.csv")
+skill_codes <- read.csv("LinkedIn Job Postings (2023 - 2024)/skills.csv")
+
+```
+
+## Data Tidying
+
+### A brief description of each raw dataset and some notes: <br>
+
+***job_postings*** contains the first set of job postings, with notable information such as *job_link*, *company*, *job_location*, *job_level*, and *job_type*.
+
+***job_posting_skills*** contains the respective job skills for each listing in ***job_posting***. They are relate to each other through *job_link*. The skills are presented in a single string, which will require further work to parse each individual skill.
+
+***job_postings2*** contains the second set of job postings, with notable information such as *job_id*, *company_name*, *title*, *location*, *remote_allowed*, 
+
+***job_posting_skills2*** contains the skills with respect to each job presented in ***job_postings2***. This dataset is in proper long form, where jobs with multiple skills repeats the *job_id* and posts each skill in *skill_abr*.
+
+***skill_codes*** contains the mappings for *skill_abr* and their respective skill names
+
+### Tidy Code
+
+Work will first be done to tidy ***job_postings***. We will be keeping only select columns in ***job_postings*** and merging in information from ***job_posting_skills***. We will also split the skill strings and, thus, elongate ***job_postings***. 
+
+```{r}
+# Keep desired columns
+job_postings <- job_postings %>%
+  select(c(job_link, company, job_location, job_level, job_type))
+
+# Merge data from job_posting_skills into job_postings
+job_postings <- left_join(job_postings, job_posting_skills, by = "job_link")
+
+# Convert job_postings to long format 
+job_postings <- job_postings %>%
+  mutate(job_skills = str_split(job_skills, ",")) %>%  # Split skill string into list
+  unnest(job_skills) %>%                               # Expand list into rows
+  mutate(job_skills = str_trim(job_skills))            # Trim whitespace
+
+# Also convert job_posting_skills to long
+job_posting_skills <- job_posting_skills %>%
+  mutate(job_skills = str_split(job_skills, ",")) %>%  # Split skill string into list
+  unnest(job_skills) %>%                               # Expand list into rows
+  mutate(job_skills = str_trim(job_skills))            # Trim whitespace
+```
+
+We will then work on tidying ***job_postings2***. First, we will edit ***job_posting_skills2*** to represent the actual names and not *skill_abr*. Secondly, we will merge the respective skills into ***jobs_postings2*** according to *job_id*. Lastly, we will trim the unneeded columns from ***job_postings2***.
+
+```{r}
+# Replace the skill_abr with actual names
+job_postings2 <- job_posting_skills2 %>%
+  left_join(skill_codes, by = "skill_abr") %>%
+  select(job_id, skill_name)   %>%                # Keep only job_id and full skill name
+  right_join(job_postings2, by = "job_id") %>%    # merge into postings
+  select(c(job_id, company_name, title, location, remote_allowed, skill_name)) %>%
+  rename(job_skills = skill_name)
+
+# Quick column rename
+job_posting_skills2 <- job_posting_skills2 %>%
+  rename(job_skills = skill_abr)
+
+```
+
+Note that not all entries from ***job_posting_skills2*** was merged into ***job_postings2*** due to the latter not having an associated posting for the former.  
+<br>
+The main datasets now are ***job_postings*** and ***job_postings2***, with supplementary sets ***job_posting_skills*** and ***job_posting_skills2***, respectively.
+
+## Data Analysis
+Now that the data is tidied, we can proceed with some data analysis.
+
+### Quick Graphs
+
+```{r}
+temp <- table(job_posting_skills$job_skills)
+colnames(temp) <-  c("Job Skill", "Count")
+```
+
+
