@@ -41,6 +41,11 @@ DS_job_skills <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA6
 
 # "LinkedIn Postings (2023-2024)" Dataset 
 
+# raw github import version
+# LI_job_postings <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/LinkedIn%20Job%20Postings/postings.csv") %>%
+#  read.csv(text = .)
+
+# importing from local machine for performance
 LI_job_postings <- read.csv("LinkedIn Job Postings/postings.csv")
 
 LI_job_skills <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/LinkedIn%20Job%20Postings/job_skills.csv") %>%
@@ -50,8 +55,7 @@ LI_skill_codes <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA
   read.csv(text = .)
 
 ```
-LI_job_postings <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/LinkedIn%20Job%20Postings/postings.csv") %>%
-  read.csv(text = .)
+
 
 
 ## Data Tidying
