@@ -119,10 +119,41 @@ Note that not all entries from ***LI_job_skills*** was merged into ***LI_job_pos
 <br>
 The main datasets now are ***DS_job_postings*** and ***LI_job_postings***, with supplementary sets ***DS_job_skills*** and ***LI_job_skills***, respectively.
 
+
 ## Data Analysis
 Now that the data is tidied, we can proceed with some data analysis.
 
+### Bar Graph Function
+Going to be making a lot of bar graphs, so will define a function for repetitive use.
+```{r}
+bar_graph <- function(data, col, xlab, title_, caption_="", color){
+  data %>%
+    # Count top ten most frequent
+    count({{col}}, sort = TRUE) %>%
+    slice_head(n = 10) %>%
+    
+    # Make graph
+    ggplot(aes(x = reorder({{col}}, n), y = n)) +
+    geom_bar(stat = "identity", fill = color) +
+    coord_flip() +
+    
+    # Make labels
+    labs(x= xlab, 
+         y = "Count", 
+         title = title_,
+         caption = caption_) +
+    
+    # Caption customization
+    theme(
+      plot.caption = element_text(
+        hjust = 0.5,        # 0 = left, 0.5 = center, 1 = right
+        face = "italic",  # style (e.g., italic, bold)
+        size = 10
+      )
+    )
+}
 
+```
 
 
 ### Quick Graphs
@@ -146,25 +177,11 @@ DS_job_skills %>%
 
 ```{r}
 # LinkedIn Skills
-LI_job_skills %>%
-  count(job_skills, sort = TRUE) %>%
-  slice_head(n = 10) %>%
-  
-  ggplot(aes(x = reorder(job_skills, n), y = n)) +
-  geom_bar(stat = "identity", fill = "tomato") +
-  coord_flip() +
-  labs(x= "LinkedIn Job Skills", 
-       y = "Count", 
-       title = "Skills in LinkedIn Job Postings",
-       caption = "Includes all job skills, even the ones irrelevant to Data Science") +
-  # Caption customizing
-  theme(
-    plot.caption = element_text(
-      hjust = 0.5,        # 0 = left, 0.5 = center, 1 = right
-      face = "italic",  # style (e.g., italic, bold)
-      size = 10
-    )
-  )
+bar_graph(LI_job_skills, job_skills,
+          xlab="LinkedIn Job Skills", 
+          title_="Skills in LinkedIn Job Postings", 
+          caption_="Includes all job skills, even the ones irrelevant to Data Science",
+          color="tomato")
 ```
 
 In this next graph we filter job skills from ***DS_job_postings*** that specifically mention "Data" and present the top ten. This graph will reappear later.
