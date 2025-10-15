@@ -161,17 +161,10 @@ bar_graph <- function(data, col, xlab, title_, caption_="", color){
 The following two graphs are simple bar graphs which display the most frequently appearing skills from each data set.  
 
 ```{r}
-# Data Science Skills
-DS_job_skills %>%
-  count(job_skills, sort = TRUE) %>%
-  slice_head(n = 10) %>%
-
-  ggplot(aes(x = reorder(job_skills, n), y = n)) +
-  geom_bar(stat = "identity", fill = "lightblue") +
-  coord_flip() + 
-  labs(x= "Data Science Job Skills", 
-       y = "Count", 
-       title = "Skills in Data Science Job Postings")
+bar_graph(DS_job_skills, job_skills,
+          xlab="Data Science Job Skills", 
+          title_="Skills in Data Science Job Postings",
+          color="lightblue")
 ```
 
 
@@ -184,29 +177,17 @@ bar_graph(LI_job_skills, job_skills,
           color="tomato")
 ```
 
-In this next graph we filter job skills from ***DS_job_postings*** that specifically mention "Data" and present the top ten. This graph will reappear later.
+In this next graph we filter job skills from ***DS_job_postings*** that specifically mention "Data" and present the top ten.
 
 ```{r}
 DS_job_postings %>%
   filter(str_detect(job_skills, "Data")) %>%
-  count(job_skills, sort = TRUE) %>%
-  slice_head(n = 10) %>%
   
-  ggplot(aes(x = reorder(job_skills, n), y = n)) +
-  geom_bar(stat = "identity", fill = "seagreen2") +
-  coord_flip() +
-  labs(x= "Data Job Skills", 
-       y = "Count", 
-       title = "Data Skills in Data Science Job Postings",
-       caption = "Graph showing the job skills in DS_job_postings that specifically mention 'Data'") +
-  # Caption customizing
-  theme(
-    plot.caption = element_text(
-      hjust = 0.5,        # 0 = left, 0.5 = center, 1 = right
-      face = "italic",  # style (e.g., italic, bold)
-      size = 10
-    )
-  )
+  bar_graph(job_skills,
+          xlab="Data Job Skills",
+          title_="Data Skills in Data Science Job Postings",
+          caption_="Graph showing the job skills in DS_job_postings that specifically mention 'Data'",
+          color="seagreen2")
 ```
 
 
@@ -232,24 +213,12 @@ Showing the graph again after that one edit.
 ```{r}
 DS_job_postings %>%
   filter(str_detect(job_skills, "Data")) %>%
-  count(job_skills, sort = TRUE) %>%
-  slice_head(n = 10) %>%
   
-  ggplot(aes(x = reorder(job_skills, n), y = n)) +
-  geom_bar(stat = "identity", fill = "seagreen2") +
-  coord_flip() +
-  labs(x= "Data Job Skills", 
-       y = "Count", 
-       title = "Data Skills in Data Science Job Postings",
-       caption = "Data Analysis counts increased nearly by a thousand") +
-  # Caption customizing
-  theme(
-    plot.caption = element_text(
-      hjust = 0.5,        # 0 = left, 0.5 = center, 1 = right
-      face = "italic",  # style (e.g., italic, bold)
-      size = 10
-    )
-  )
+  bar_graph(job_skills,
+          xlab="Data Job Skills",
+          title_="Data Skills in Data Science Job Postings",
+          caption_="Data Analysis counts increased nearly by a thousand",
+          color="seagreen2")
 ```
 
 
