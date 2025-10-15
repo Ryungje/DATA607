@@ -233,7 +233,8 @@ skill_var <- list(
   c("Machine Learning", "Machine Learning"),
   c("Artificial Intelligence|^AI$", "Artificial Intelligence"),
   c("Sql", "SQL"),
-  c("C|C#|C++"),
+  c("C#", "C#"),
+  c("C++", "C++"),
   c("Aws", "AWS"),
   c("Azure", "AZURE")
   )
