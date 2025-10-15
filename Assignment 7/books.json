@@ -1,0 +1,19 @@
+{
+  "books": [
+    {
+      "title": "Mere Christianity",
+      "author": "C.S. Lewis",
+      "attributes": ["Encouraging", "Easy to read"]
+    },
+    {
+      "title": "The Reason for God",
+      "author": "Timothy Keller",
+      "attributes": ["Logical", "Mentions good sources"]
+    },
+    {
+      "title": "The Bible",
+      "authors": ["James", "Paul", "King David", "Others"],
+      "attributes": ["Epic", "Dense", "Great plot twist"]
+    }
+  ]
+}

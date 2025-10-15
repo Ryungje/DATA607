@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<books>
+    <book>
+        <title>Mere Christianity</title>
+        <author>C.S. Lewis</author>
+        <attributes>
+	    <attribute>Encouraging</attribute>
+            <attribute>Easy to read</attribute>
+	</attributes>
+    </book>
+    <book>
+        <title>The Reason for God</title>
+        <author>Timothy Keller</author>
+        <attributes>
+	    <attribute>Logical</attribute>
+	    <attribute>Mentions good sources</attribute>
+	</attributes>
+    </book>
+    <book>
+        <title>The Bible</title>
+        <authors>
+            <author>James</author>
+            <author>Paul</author>
+            <author>King David</author>
+            <author>Others</author>
+        </authors>
+        <attributes>
+	    <attribute>Epic</attribute>
+	    <attribute>Dense</attribute>
+	    <attribute>Great plot twist</attribute>
+	</attributes>
+    </book>
+</books>

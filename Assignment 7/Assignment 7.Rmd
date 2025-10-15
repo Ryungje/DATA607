@@ -1,0 +1,77 @@
+---
+title: "Assignment 7"
+author: "James Chun"
+date: "October 9, 2025"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Assignment 7 - Working with XML and JSON in R
+## Books
+As a christian, I try and read a lot of christian literature. These are some of my favorites:  
+  
+"Mere Christianity" by C.S. Lewis - encouraging and easy to read  
+"The Reason for God" by Timothy Keller - logical and mentions good sources  
+The Bible by James, Paul, King David, and others - epic, dense, and great plot twist  
+  
+Technically the Bible is a collection of books, but since everyone publishes and refers to it as one book I will use that to my advantage.  
+  
+## Load Libraries
+```{r message=FALSe}
+library(xml2)
+library(jsonlite)
+library(rvest)
+```
+
+
+
+## Reading the book files
+```{r}
+books_xml <- read_xml("books.xml") %>%
+  xml_find_all(".//book")
+
+books_json <- fromJSON("books.json")
+
+books_html <- read_html("books.html")
+
+```
+
+## The Raw Imports
+Each of the reads produces a data frame (if it can be called that) which resembles a list that simply contains all the file's syntax and data. For example, the json version presents itself as a nested list with each 
+
+## Processing Imports
+I am not entirely sure if this step is necessary, but I am opting to process the raw imports a little further to extract the relevant information into a data frame.
+
+```{r}
+# HTML
+html_df <- books_html %>% 
+  html_element("table") %>% 
+  html_table()
+
+# JSON
+json_df <- as.data.frame(books_json$books)
+json_df$authors <- ifelse(
+    !is.na(json_df$author),
+    json_df$author,
+    json_df$authors
+  )
+json_df$author <- NULL
+
+# XML
+xml_df <- data.frame(title = xml_text(xml_find_all(books_xml, "./title")),
+                     authors = c(
+                       xml_text(xml_find_all(books_xml, "./author")),
+                       xml_text(xml_find_all(books_xml, "./authors"))),
+                     attributes = xml_text(xml_find_all(books_xml, "./attributes")))
+
+```
+
+
+
+
+
