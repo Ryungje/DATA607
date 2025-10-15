@@ -233,8 +233,8 @@ skill_var <- list(
   c("Machine Learning", "Machine Learning"),
   c("Artificial Intelligence|^AI$", "Artificial Intelligence"),
   c("Sql", "SQL"),
+  c("Python", "Python"),
   c("C#", "C#"),
-  c("C++", "C++"),
   c("Aws", "AWS"),
   c("Azure", "AZURE")
   )
@@ -274,4 +274,4 @@ For ***DS_job_skills*** (and the corresponding column in ***DS_job_postings***) 
 
 Note that AWS and SQL are also left as Aws and Sql, respectively. Doesn't seem like there are any instances of AWS and SQL, or other variations, in the column so it should be okay. 
 
-
+Some problems with the way I did the type matching [the line with skill_var <- list(c("Data Analysis...]. Any skill that had a combination of skills were at risk of being classified as only one (whichever I decided to match for first in that list). Maybe this is why C++ had so many counts?
