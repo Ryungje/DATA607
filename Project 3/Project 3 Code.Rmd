@@ -57,7 +57,6 @@ LI_skill_codes <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA
 ```
 
 
-
 ## Data Tidying
 
 ### A brief description of each raw dataset and some notes: <br>
@@ -225,6 +224,41 @@ DS_job_postings %>%
           color="seagreen2")
 ```
 
+Let's now try and apply this idea to as many skills possible. Note, there are some skills that are mentioned together, like "Data Visualization and Analysis" or "Artificial Intelligence/Machine Learning" which were not accounted for. Also note, ML and AI are similar but decided to keep them separate. 
+
+```{r}
+skill_var <- list(
+  c("Data Analysis|Data Analyst|Data Analytics|Data Analytic|Data Analyses|Data Analytical", "Data Analysis"), 
+  c("Data Visualization|Data Visualisation", "Data Visualization"),
+  c("Machine Learning", "Machine Learning"),
+  c("Artificial Intelligence|^AI$", "Artificial Intelligence"),
+  c("Sql", "SQL"),
+  c("C|C#|C++"),
+  c("Aws", "AWS"),
+  c("Azure", "AZURE")
+  )
+
+for (var in skill_var){
+  DS_job_postings <- DS_job_postings %>%
+    mutate(job_skills = case_when(
+      str_detect(job_skills, 
+                 regex(var[1],
+                 ignore_case = TRUE)) ~ var[2],
+      TRUE ~ job_skills
+    ))
+}
+
+```
+
+And let's see the graph again. Keep in mind that since we were not able to apply this procedure to all the notable job skills, there may be some bias in terms of what is depicted on the graph. Clearly the bias is towards the more recognizable data science skills. We will also lift the exclusion to only skills that mention "Data"
+
+```{r}
+bar_graph(DS_job_postings, job_skills,
+          xlab="Data Skills in Data Science Postings",
+          title_="Data Science Skills",
+          color="seagreen2"
+)
+```
 
 
 ## Scracth Code and Notes
@@ -232,6 +266,8 @@ DS_job_postings %>%
 ```{r}
 
 ```
+
+
 
 For ***DS_job_skills*** (and the corresponding column in ***DS_job_postings***) Dataset, the listed skills are messy and there are semantic differences. For example, "Data Analysis" and "Data Analyst" appear separately, but mean the same thing. 
 
