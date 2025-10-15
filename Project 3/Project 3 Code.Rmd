@@ -28,7 +28,7 @@ https://www.kaggle.com/datasets/asaniczka/data-science-job-postings-and-skills/d
 
 Note that not all provided datasets from the orignal sources were used. As the priority of this project are the job postings and their respective job skills, files not relevant were excluded.
 
-***As of now, the relevant datasets are stored in a github repo and accessed/imported as raw github file.*** Note that the postings.csv from the LinkedIn Data takes considerable time to import using this method.
+***As of now, the relevant datasets are stored in a github repo and accessed/imported as raw github file.*** Note that the postings.csv from the LinkedIn Data takes considerable time to import using this method. For better performance, suggest downloading the "posting.csv" and using read.csv
 ```{r}
 # "Data Science Postings (2024)" Dataset
 
@@ -41,8 +41,7 @@ DS_job_skills <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA6
 
 # "LinkedIn Postings (2023-2024)" Dataset 
 
-LI_job_postings <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/LinkedIn%20Job%20Postings/postings.csv") %>%
-  read.csv(text = .)
+LI_job_postings <- read.csv("LinkedIn Job Postings/postings.csv")
 
 LI_job_skills <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/LinkedIn%20Job%20Postings/job_skills.csv") %>%
   read.csv(text = .)
@@ -51,6 +50,9 @@ LI_skill_codes <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA
   read.csv(text = .)
 
 ```
+LI_job_postings <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/LinkedIn%20Job%20Postings/postings.csv") %>%
+  read.csv(text = .)
+
 
 ## Data Tidying
 
@@ -66,7 +68,7 @@ LI_skill_codes <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA
 
 ***LI_skill_codes*** contains the mappings for *skill_abr* and their respective skill names
 
-### Tidy Code
+### General Tidying
 
 Work will first be done to tidy ***DS_job_postings***. We will be keeping only select columns in ***DS_job_postings*** and merging in information from ***DS_job_skills***. We will also split the skill strings and, thus, elongate ***DS_job_postings***. 
 
@@ -92,6 +94,7 @@ DS_job_skills <- DS_job_skills %>%
   mutate(job_skills = str_trim(job_skills)) %>%        # Trim whitespace
   mutate(job_skills = str_to_title(job_skills))        # Tidy skills to be capitalized
 ```
+
 
 We will then work on tidying ***LI_job_postings***. First, we will edit ***LI_job_skills*** to represent the actual names and not *skill_abr*. Secondly, we will merge the respective skills into ***jobs_postings2*** according to *job_id*. Lastly, we will trim the unneeded columns from ***LI_job_postings***.
 
@@ -119,9 +122,12 @@ The main datasets now are ***DS_job_postings*** and ***LI_job_postings***, with 
 ## Data Analysis
 Now that the data is tidied, we can proceed with some data analysis.
 
+
+
+
 ### Quick Graphs
 
-These two graphs are simple bar graphs which display the most frequently appearing skills from each data set.  
+The following two graphs are simple bar graphs which display the most frequently appearing skills from each data set.  
 
 ```{r}
 # Data Science Skills
@@ -132,8 +138,11 @@ DS_job_skills %>%
   ggplot(aes(x = reorder(job_skills, n), y = n)) +
   geom_bar(stat = "identity", fill = "lightblue") +
   coord_flip() + 
-  labs(x= "Data Science Job Skills", y = "Count", title = "Data Science Skills in Job Postings")
+  labs(x= "Data Science Job Skills", 
+       y = "Count", 
+       title = "Skills in Data Science Job Postings")
 ```
+
 
 ```{r}
 # LinkedIn Skills
@@ -144,18 +153,98 @@ LI_job_skills %>%
   ggplot(aes(x = reorder(job_skills, n), y = n)) +
   geom_bar(stat = "identity", fill = "tomato") +
   coord_flip() +
-  labs(x= "LinkedIn Job Skills", y = "Count", title = "LinkedIn Skills in Job Postings")
+  labs(x= "LinkedIn Job Skills", 
+       y = "Count", 
+       title = "Skills in LinkedIn Job Postings",
+       caption = "Includes all job skills, even the ones irrelevant to Data Science") +
+  # Caption customizing
+  theme(
+    plot.caption = element_text(
+      hjust = 0.5,        # 0 = left, 0.5 = center, 1 = right
+      face = "italic",  # style (e.g., italic, bold)
+      size = 10
+    )
+  )
 ```
+
+In this next graph we filter job skills from ***DS_job_postings*** that specifically mention "Data" and present the top ten. This graph will reappear later.
 
 ```{r}
-temp <- DS_job_postings %>%
-  filter(str_detect(job_skills, "Data"))
+DS_job_postings %>%
+  filter(str_detect(job_skills, "Data")) %>%
+  count(job_skills, sort = TRUE) %>%
+  slice_head(n = 10) %>%
+  
+  ggplot(aes(x = reorder(job_skills, n), y = n)) +
+  geom_bar(stat = "identity", fill = "seagreen2") +
+  coord_flip() +
+  labs(x= "Data Job Skills", 
+       y = "Count", 
+       title = "Data Skills in Data Science Job Postings",
+       caption = "Graph showing the job skills in DS_job_postings that specifically mention 'Data'") +
+  # Caption customizing
+  theme(
+    plot.caption = element_text(
+      hjust = 0.5,        # 0 = left, 0.5 = center, 1 = right
+      face = "italic",  # style (e.g., italic, bold)
+      size = 10
+    )
+  )
+```
+
+
+## Semantics Tidying
+
+### Data Analysis?
+The main problem with ***DS_job_postings*** is that there are many variations for the same job skills. For example, "Data Analyst" and "Data Analysis", some others such as "Health Data Analyst", etc.  
+<br>
+Some additional tidying to ***DS_job_postings***. Changing all instances that contains "Data Analyst" or anything similar, to say "Data Analysis." After all, these all mean the same thing: having data analysis skills.  
+
+```{r}
+DS_job_postings <- DS_job_postings %>%
+  mutate(job_skills = case_when(
+    str_detect(job_skills, 
+               regex("Data Analysis|Data Analyst|Data Analytics",
+               ignore_case = TRUE)) ~ "Data Analysis",
+    TRUE ~ job_skills
+  ))
+```
+
+Showing the graph again after that one edit.  
+
+```{r}
+DS_job_postings %>%
+  filter(str_detect(job_skills, "Data")) %>%
+  count(job_skills, sort = TRUE) %>%
+  slice_head(n = 10) %>%
+  
+  ggplot(aes(x = reorder(job_skills, n), y = n)) +
+  geom_bar(stat = "identity", fill = "seagreen2") +
+  coord_flip() +
+  labs(x= "Data Job Skills", 
+       y = "Count", 
+       title = "Data Skills in Data Science Job Postings",
+       caption = "Data Analysis counts increased nearly by a thousand") +
+  # Caption customizing
+  theme(
+    plot.caption = element_text(
+      hjust = 0.5,        # 0 = left, 0.5 = center, 1 = right
+      face = "italic",  # style (e.g., italic, bold)
+      size = 10
+    )
+  )
 ```
 
 
 
-## Scracth Notes
+## Scracth Code and Notes
+
+```{r}
+
+```
 
 For ***DS_job_skills*** (and the corresponding column in ***DS_job_postings***) Dataset, the listed skills are messy and there are semantic differences. For example, "Data Analysis" and "Data Analyst" appear separately, but mean the same thing. 
+
+Note that AWS and SQL are also left as Aws and Sql, respectively. Doesn't seem like there are any instances of AWS and SQL, or other variations, in the column so it should be okay. 
 
 
