@@ -17,7 +17,7 @@ Load libraries and packages as necessary.
 ```{r message=FALSE}
 library(tidyverse)
 library(DBI)
-#library(RmySQL)
+library(RCurl)
 ```
 
 ## Import Raw Data
@@ -31,15 +31,23 @@ Note that not all provided datasets from the orignal sources were used. As the p
 ```{r}
 # "Data Science Postings (2024)" Dataset
 
-job_postings <- read.csv("Data Science Job Postings & Skills (2024)/job_postings.csv")
-job_posting_skills <- read.csv("Data Science Job Postings & Skills (2024)/job_skills.csv")
+job_postings <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/Data%20Science%20Job%20Postings/job_postings.csv") %>% 
+  read.csv(text = .)
+
+job_posting_skills <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/Data%20Science%20Job%20Postings/job_skills.csv") %>%
+  read.csv(text = .)
 
 
 # "LinkedIn Postings (2023-2024)" Dataset 
 
-job_postings2 <- read.csv("LinkedIn Job Postings (2023 - 2024)/postings.csv")
-job_posting_skills2 <- read.csv("LinkedIn Job Postings (2023 - 2024)/job_skills.csv")
-skill_codes <- read.csv("LinkedIn Job Postings (2023 - 2024)/skills.csv")
+job_postings2 <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/LinkedIn%20Job%20Postings/postings.csv") %>%
+  read.csv(text = .)
+
+job_posting_skills2 <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/LinkedIn%20Job%20Postings/job_skills.csv") %>%
+  read.csv(text = .)
+
+skill_codes <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/LinkedIn%20Job%20Postings/skills.csv") %>%
+  read.csv(text = .)
 
 ```
 
