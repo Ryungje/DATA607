@@ -27,26 +27,26 @@ https://www.kaggle.com/datasets/asaniczka/data-science-job-postings-and-skills/d
 
 Note that not all provided datasets from the orignal sources were used. As the priority of this project are the job postings and their respective job skills, files not relevant were excluded.
 
-
+***As of now, the relevant datasets are stored in a github repo and accessed/imported as raw github file.*** Note that the postings.csv from the LinkedIn Data takes considerable time to import using this method.
 ```{r}
 # "Data Science Postings (2024)" Dataset
 
-job_postings <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/Data%20Science%20Job%20Postings/job_postings.csv") %>% 
+DS_job_postings <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/Data%20Science%20Job%20Postings/job_postings.csv") %>% 
   read.csv(text = .)
 
-job_posting_skills <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/Data%20Science%20Job%20Postings/job_skills.csv") %>%
+DS_job_skills <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/Data%20Science%20Job%20Postings/job_skills.csv") %>%
   read.csv(text = .)
 
 
 # "LinkedIn Postings (2023-2024)" Dataset 
 
-job_postings2 <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/LinkedIn%20Job%20Postings/postings.csv") %>%
+LI_job_postings <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/LinkedIn%20Job%20Postings/postings.csv") %>%
   read.csv(text = .)
 
-job_posting_skills2 <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/LinkedIn%20Job%20Postings/job_skills.csv") %>%
+LI_job_skills <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/LinkedIn%20Job%20Postings/job_skills.csv") %>%
   read.csv(text = .)
 
-skill_codes <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/LinkedIn%20Job%20Postings/skills.csv") %>%
+LI_skill_codes <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607/refs/heads/main/Project%203/LinkedIn%20Job%20Postings/skills.csv") %>%
   read.csv(text = .)
 
 ```
@@ -55,61 +55,63 @@ skill_codes <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA607
 
 ### A brief description of each raw dataset and some notes: <br>
 
-***job_postings*** contains the first set of job postings, with notable information such as *job_link*, *company*, *job_location*, *job_level*, and *job_type*.
+***DS_job_postings*** contains the first set of job postings, with notable information such as *job_link*, *company*, *job_location*, *job_level*, and *job_type*.
 
-***job_posting_skills*** contains the respective job skills for each listing in ***job_posting***. They are relate to each other through *job_link*. The skills are presented in a single string, which will require further work to parse each individual skill.
+***DS_job_skills*** contains the respective job skills for each listing in ***job_posting***. They are relate to each other through *job_link*. The skills are presented in a single string, which will require further work to parse each individual skill.
 
-***job_postings2*** contains the second set of job postings, with notable information such as *job_id*, *company_name*, *title*, *location*, *remote_allowed*, 
+***LI_job_postings*** contains the second set of job postings, with notable information such as *job_id*, *company_name*, *title*, *location*, *remote_allowed*, 
 
-***job_posting_skills2*** contains the skills with respect to each job presented in ***job_postings2***. This dataset is in proper long form, where jobs with multiple skills repeats the *job_id* and posts each skill in *skill_abr*.
+***LI_job_skills*** contains the skills with respect to each job presented in ***LI_job_postings***. This dataset is in proper long form, where jobs with multiple skills repeats the *job_id* and posts each skill in *skill_abr*.
 
-***skill_codes*** contains the mappings for *skill_abr* and their respective skill names
+***LI_skill_codes*** contains the mappings for *skill_abr* and their respective skill names
 
 ### Tidy Code
 
-Work will first be done to tidy ***job_postings***. We will be keeping only select columns in ***job_postings*** and merging in information from ***job_posting_skills***. We will also split the skill strings and, thus, elongate ***job_postings***. 
+Work will first be done to tidy ***DS_job_postings***. We will be keeping only select columns in ***DS_job_postings*** and merging in information from ***DS_job_skills***. We will also split the skill strings and, thus, elongate ***DS_job_postings***. 
 
 ```{r}
 # Keep desired columns
-job_postings <- job_postings %>%
+DS_job_postings <- DS_job_postings %>%
   select(c(job_link, company, job_location, job_level, job_type))
 
-# Merge data from job_posting_skills into job_postings
-job_postings <- left_join(job_postings, job_posting_skills, by = "job_link")
+# Merge data from DS_job_skills into DS_job_postings
+DS_job_postings <- left_join(DS_job_postings, DS_job_skills, by = "job_link")
 
-# Convert job_postings to long format 
-job_postings <- job_postings %>%
+# Convert DS_job_postings to long format 
+DS_job_postings <- DS_job_postings %>%
   mutate(job_skills = str_split(job_skills, ",")) %>%  # Split skill string into list
   unnest(job_skills) %>%                               # Expand list into rows
   mutate(job_skills = str_trim(job_skills))            # Trim whitespace
 
-# Also convert job_posting_skills to long
-job_posting_skills <- job_posting_skills %>%
+# Also convert DS_job_skills to long
+DS_job_skills <- DS_job_skills %>%
   mutate(job_skills = str_split(job_skills, ",")) %>%  # Split skill string into list
   unnest(job_skills) %>%                               # Expand list into rows
   mutate(job_skills = str_trim(job_skills))            # Trim whitespace
 ```
 
-We will then work on tidying ***job_postings2***. First, we will edit ***job_posting_skills2*** to represent the actual names and not *skill_abr*. Secondly, we will merge the respective skills into ***jobs_postings2*** according to *job_id*. Lastly, we will trim the unneeded columns from ***job_postings2***.
+We will then work on tidying ***LI_job_postings***. First, we will edit ***LI_job_skills*** to represent the actual names and not *skill_abr*. Secondly, we will merge the respective skills into ***jobs_postings2*** according to *job_id*. Lastly, we will trim the unneeded columns from ***LI_job_postings***.
 
 ```{r}
 # Replace the skill_abr with actual names
-job_postings2 <- job_posting_skills2 %>%
-  left_join(skill_codes, by = "skill_abr") %>%
+LI_job_postings <- LI_job_skills %>%
+  left_join(LI_skill_codes, by = "skill_abr") %>%
   select(job_id, skill_name)   %>%                # Keep only job_id and full skill name
-  right_join(job_postings2, by = "job_id") %>%    # merge into postings
+  right_join(LI_job_postings, by = "job_id") %>%    # merge into postings
   select(c(job_id, company_name, title, location, remote_allowed, skill_name)) %>%
   rename(job_skills = skill_name)
 
 # Quick column rename
-job_posting_skills2 <- job_posting_skills2 %>%
-  rename(job_skills = skill_abr)
+LI_job_skills <- LI_job_skills %>%
+  left_join(LI_skill_codes, by = "skill_abr") %>%
+  select(job_id, skill_name) %>%
+  rename(job_skills = skill_name)
 
 ```
 
-Note that not all entries from ***job_posting_skills2*** was merged into ***job_postings2*** due to the latter not having an associated posting for the former.  
+Note that not all entries from ***LI_job_skills*** was merged into ***LI_job_postings*** due to the latter not having an associated posting for the former.  
 <br>
-The main datasets now are ***job_postings*** and ***job_postings2***, with supplementary sets ***job_posting_skills*** and ***job_posting_skills2***, respectively.
+The main datasets now are ***DS_job_postings*** and ***LI_job_postings***, with supplementary sets ***DS_job_skills*** and ***LI_job_skills***, respectively.
 
 ## Data Analysis
 Now that the data is tidied, we can proceed with some data analysis.
@@ -117,8 +119,30 @@ Now that the data is tidied, we can proceed with some data analysis.
 ### Quick Graphs
 
 ```{r}
-temp <- table(job_posting_skills$job_skills)
-colnames(temp) <-  c("Job Skill", "Count")
+# Data Science Skills
+temp <- DS_job_skills %>%
+  count(job_skills, sort = TRUE) %>%
+  slice_head(n = 10)
+
+ggplot(temp, aes(x = reorder(job_skills, n), y = n)) +
+  geom_bar(stat = "identity", fill = "lightblue") +
+  coord_flip() + 
+  labs(x= "Data Science Job Skills", y = "Count", title = "Data Science Skills in Job Postings")
 ```
 
+```{r}
+# LinkedIn Skills
+temp2 <- LI_job_skills %>%
+  count(job_skills, sort = TRUE) %>%
+  slice_head(n = 10)
+
+ggplot(temp2, aes(x = reorder(job_skills, n), y = n)) +
+  geom_bar(stat = "identity", fill = "tomato") +
+  coord_flip() +
+  labs(x= "LinkedIn Job Skills", y = "Count", title = "LinkedIn Skills in Job Postings")
+```
+
+```{r}
+temp3 <- unique(DS_job_skills$job_skills)
+```
 
