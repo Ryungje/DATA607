@@ -258,9 +258,14 @@ And let's see the graph again. Keep in mind that since we were not able to apply
 bar_graph(DS_job_postings, job_skills,
           xlab="Data Skills in Data Science Postings",
           title_="Data Science Skills",
+          caption_="We can see that SQL takes the lead as the most requested Data Science Skill",
           color="seagreen2"
 )
 ```
+
+
+
+
 
 
 ## Scracth Code and Notes
