@@ -20,7 +20,8 @@ library(DBI)
 library(RCurl)
 library(stringr)
 ```
-
+<br>
+<br>
 ## Import Raw Data
 The original sources, as stated in the proposal, are found on the following sites: <br>
 https://www.kaggle.com/datasets/arshkon/linkedin-job-postings/data <br>
@@ -56,10 +57,12 @@ LI_skill_codes <- getURL("https://media.githubusercontent.com/media/Ryungje/DATA
 
 ```
 
+<br>
+<br>
 
 ## Data Tidying
 
-### A brief description of each raw dataset and some notes: <br>
+### A Brief Description of Datasets: <br>
 
 ***DS_job_postings*** contains the first set of job postings, with notable information such as *job_link*, *company*, *job_location*, *job_level*, and *job_type*.
 
@@ -122,6 +125,8 @@ Note that not all entries from ***LI_job_skills*** was merged into ***LI_job_pos
 <br>
 The main datasets now are ***DS_job_postings*** and ***LI_job_postings***, with supplementary sets ***DS_job_skills*** and ***LI_job_skills***, respectively.
 
+<br>
+<br>
 
 ## Data Analysis
 Now that the data is tidied, we can proceed with some data analysis.
@@ -193,6 +198,8 @@ DS_job_postings %>%
           color="seagreen2")
 ```
 
+<br>
+<br>
 
 ## Semantics Tidying
 
