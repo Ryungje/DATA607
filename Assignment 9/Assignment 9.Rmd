@@ -1,0 +1,53 @@
+---
+title: "Assignment 9 - NYT API"
+authors: "James Chun"
+date: "2025-10-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Install Libraries
+
+```{r, message=FALSE}
+library(httr2)
+library(jsonlite)
+library(dplyr)
+library(purrr)
+```
+
+## API Key
+Personal API key was obtained from https://developer.nytimes.com
+```{r}
+api_key <- "xuAGuj7bTCDxnEG9DcB4oMuBmVLtqaD6"
+```
+
+## Create URL Request
+I decided to go with the election articles
+```{r}
+req <- request("https://api.nytimes.com/svc/search/v2/articlesearch.json?q=election&api-key=xuAGuj7bTCDxnEG9DcB4oMuBmVLtqaD6")
+
+resp <- req_perform(req)
+```
+
+## Convert from JSON to Data Frame
+```{r}
+json_data <- resp %>% 
+  resp_body_json(flatten = TRUE)
+
+articles_df <- map_dfr(json_data$response$docs, function(x) {
+  tibble(
+    headline = x$headline$main,
+    pub_date = x$pub_date,
+    author = x$byline$original,
+    section_name = x$section_name,
+    type_of_material = x$type_of_material,
+    url = x$web_url,
+    snippet = x$snippet
+  )
+}) %>%
+  mutate(pub_date = as.Date(pub_date))
+```
+
