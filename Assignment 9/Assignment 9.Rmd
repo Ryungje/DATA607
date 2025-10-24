@@ -1,8 +1,10 @@
 ---
 title: "Assignment 9 - NYT API"
-authors: "James Chun"
-date: "2025-10-24"
-output: html_document
+author: "James Chun"
+date: "October 24, 2025"
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -49,5 +51,11 @@ articles_df <- map_dfr(json_data$response$docs, function(x) {
   )
 }) %>%
   mutate(pub_date = as.Date(pub_date))
+```
+
+## Observe Result
+
+```{r}
+head(articles_df)
 ```
 
