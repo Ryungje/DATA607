@@ -1,0 +1,33 @@
+---
+title: "Assignment 10B"
+author: "James Chun"
+date: "November 1, 2025"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# More JSON Practice: Nobel Prize
+
+## Load Libraries
+```{r}
+library(httr)
+library(jsonlite)
+library(dplyr)
+```
+
+## Import JSON
+The data we'll be using is about the Nobel Prize Laureates found on 
+<br>
+https://api.nobelprize.org/2.1/laureates
+<br>
+<br>
+This endpoint is further nested in https://www.nobelprize.org/about/developer-zone-2/
+
+```{r}
+laureates <- getURL("") %>%
+  fromJSON("")
+```
+
