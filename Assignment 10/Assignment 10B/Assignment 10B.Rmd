@@ -16,6 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(RCurl)
 library(jsonlite)
 library(purrr)
+library(httr2)
 ```
 
 ## Import JSON
@@ -27,22 +28,48 @@ https://api.nobelprize.org/2.1/laureates
 This endpoint is further nested in https://www.nobelprize.org/about/developer-zone-2/
 
 ```{r}
-laureates_json <- getURL("https://raw.githubusercontent.com/Ryungje/DATA607/refs/heads/main/Assignment%2010/Assignment%2010B/laureates.json") %>%
-  fromJSON("laureates.json")
+# Create url request
+req <- request("http://api.nobelprize.org/2.1/laureates?limit=1000")
+resp <- req_perform(req)
+
+# Extract json
+laureates_json <- resp %>% 
+  resp_body_json(flatten = TRUE)
 ```
 
 ## Tidy JSON
+First tidy the JSON into a dataframe. Note that laureates with multiple prizes did not have their prizes properly represented in the dataframe.
 
 ```{r}
 laureates <- laureates_json$laureates %>%
   map_dfr(function(laureate) {
   tibble(
-    name = laureate$fullName$en,
-    country = laureate$birth$place$country$en,
+    name = if (!is.null(laureate$fullName$en)){
+      laureate$fullName$en
+      } else{
+        laureate$orgName$en
+        },
+    
+    country = if (!is.null(laureate$birth)) {
+      laureate$birth$place$country$en
+      } else{
+        laureate$founded$place$country$en
+        },
+    
+    birthday = if (!is.null(laureate$birth)){
+      laureate$birth$date
+      } else{
+        laureate$founded$date
+        },
+    
     gender = laureate$gender,
-    birthday = laureate$birth$date,
-    nobel.prizes = laureate$nobelPrizes
+    year.awarded = laureate$nobelPrizes[[1]]$awardYear,
+    category = laureate$nobelPrizes[[1]]$category$en,
+    prize.amount.adjusted = laureate$nobelPrizes[[1]]$prizeAmountAdjusted,
+    affiliation = laureate$nobelPrizes[[1]]$affiliations[[1]]$name$en,
+    affiliation.country = laureate$nobelPrizes[[1]]$affiliations[[1]]$country$en
   )
 })
 ```
+
 
