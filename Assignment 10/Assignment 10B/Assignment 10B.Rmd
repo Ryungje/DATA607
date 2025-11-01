@@ -20,16 +20,16 @@ library(httr2)
 ```
 
 ## Import JSON
-The data we'll be using is about the Nobel Prize Laureates found on 
-<br>
-https://api.nobelprize.org/2.1/laureates
+The data we'll be using is about the Nobel Prize Laureates. This information can be accessed virtually through the public API: https://app.swaggerhub.com/apis/NobelMedia/NobelMasterData/2.1
 <br>
 <br>
-This endpoint is further nested in https://www.nobelprize.org/about/developer-zone-2/
+Furthermore, the actual database is found on http://api.nobelprize.org/2.1/laureates?limit=SETLIMIT
+<br>
+Where the limit of how many individuals you want to observe can be set manually. This site will be the one used for the purposes of this markdown. All of these sites and endpoints are sourced from https://www.nobelprize.org/about/developer-zone-2/
 
 ```{r}
 # Create url request
-req <- request("http://api.nobelprize.org/2.1/laureates?limit=1000")
+req <- request("http://api.nobelprize.org/2.1/laureates?limit=1050")
 resp <- req_perform(req)
 
 # Extract json
@@ -37,8 +37,10 @@ laureates_json <- resp %>%
   resp_body_json(flatten = TRUE)
 ```
 
+The initial request has the limit set to 1050, it was an arbitrary number but does seem to collect all the laureates.
+
 ## Tidy JSON
-First tidy the JSON into a dataframe. Note that laureates with multiple prizes did not have their prizes properly represented in the dataframe.
+First tidy the JSON into a dataframe. Note that laureates with multiple prizes did not have their prizes properly represented in the dataframe. 
 
 ```{r}
 laureates <- laureates_json$laureates %>%
