@@ -12,10 +12,10 @@ knitr::opts_chunk$set(echo = TRUE)
 # More JSON Practice: Nobel Prize
 
 ## Load Libraries
-```{r}
-library(httr)
+```{r message=FALSE, warning=FALSE}
+library(RCurl)
 library(jsonlite)
-library(dplyr)
+library(purrr)
 ```
 
 ## Import JSON
@@ -27,7 +27,22 @@ https://api.nobelprize.org/2.1/laureates
 This endpoint is further nested in https://www.nobelprize.org/about/developer-zone-2/
 
 ```{r}
-laureates <- getURL("") %>%
-  fromJSON("")
+laureates_json <- getURL("https://raw.githubusercontent.com/Ryungje/DATA607/refs/heads/main/Assignment%2010/Assignment%2010B/laureates.json") %>%
+  fromJSON("laureates.json")
+```
+
+## Tidy JSON
+
+```{r}
+laureates <- laureates_json$laureates %>%
+  map_dfr(function(laureate) {
+  tibble(
+    name = laureate$fullName$en,
+    country = laureate$birth$place$country$en,
+    gender = laureate$gender,
+    birthday = laureate$birth$date,
+    nobel.prizes = laureate$nobelPrizes
+  )
+})
 ```
 
