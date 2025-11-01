@@ -254,7 +254,7 @@ twain_books <- gutenberg_download(c(74, 76))
 
 ### Tidy the novels
 
-```{r}
+```{r warning=FALSE}
 twain_books$book[twain_books$gutenberg_id == 74] <- "THE ADVENTURES OF TOM SAWYER"
 twain_books$book[twain_books$gutenberg_id == 76] <- "ADVENTURES OF HUCKLEBERRY FINN"
 twain_books$gutenberg_id <- NULL
@@ -282,7 +282,7 @@ mark_twain_sentiment <- twain_tidy_books %>%
   mutate(sentiment = positive - negative)
 ```
 
-### Plot the results
+Plot the results
 
 ```{r}
 ggplot(mark_twain_sentiment, aes(index, sentiment, fill = book)) +
@@ -290,6 +290,54 @@ ggplot(mark_twain_sentiment, aes(index, sentiment, fill = book)) +
   facet_wrap(~book, ncol = 2, scales = "free_x")
 ```
 
+### Lexicon Comparisons
+Like the example code, we will be comparing Loughran to the lexicons AFINN, NFC, and bing. Also like the example code, we will focus on one novel: "Tom Sawyer".
+
+```{r warning=FALSE, message=FALSE}
+tom_sawyer <- twain_tidy_books %>% 
+  filter(book == "THE ADVENTURES OF TOM SAWYER")
+
+twain_afinn <- tom_sawyer %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  group_by(index = linenumber %/% 80) %>% 
+  summarise(sentiment = sum(value)) %>% 
+  mutate(method = "AFINN")
+
+twain_bing_and_nrc <- bind_rows(
+  tom_sawyer %>% 
+    inner_join(get_sentiments("bing")) %>%
+    mutate(method = "Bing et al."),
+  tom_sawyer %>% 
+    inner_join(get_sentiments("nrc") %>% 
+                 filter(sentiment %in% c("positive", 
+                                         "negative"))
+    ) %>%
+    mutate(method = "NRC")) %>%
+  count(method, index = linenumber %/% 80, sentiment) %>%
+  pivot_wider(names_from = sentiment,
+              values_from = n,
+              values_fill = 0) %>% 
+  mutate(sentiment = positive - negative)
+
+twain_loughran <- tom_sawyer %>%
+  inner_join(get_sentiments("loughran")) %>%
+  count(book, index = linenumber %/% 80, sentiment) %>%
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>% 
+  mutate(sentiment = positive - negative) %>%
+  mutate(method = "Loughran")
+```
+
+Plot the results
+
+```{r}
+bind_rows(twain_afinn, 
+          twain_bing_and_nrc, twain_loughran) %>%
+  ggplot(aes(index, sentiment, fill = method)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~method, ncol = 1, scales = "free_y")
+```
+
+Most of the plots suggest that Tom Sawyer is a surprisingly negative book -- unless I am remembering it wrong. With that said, AFIN and NRC display the most positive outlook.  
 
 ## References
 
