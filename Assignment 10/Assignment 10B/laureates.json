@@ -5567,9 +5567,9 @@
     "disclaimer": "https://www.nobelprize.org/about/terms-of-use-for-api-nobelprize-org-and-data-nobelprize-org/#disclaimer"
   },
   "links": {
-    "first": "http://nobel-external-api-app.azurewebsites.net/2.1/laureates?offset=0&limit=25",
-    "self": "http://nobel-external-api-app.azurewebsites.net/2.1/laureates?offset=0&limit=25",
-    "next": "http://nobel-external-api-app.azurewebsites.net/2.1/laureates?offset=25&limit=25",
-    "last": "http://nobel-external-api-app.azurewebsites.net/2.1/laureates?offset=1000&limit=25"
+    "first": "http://nobel-external-api-app.azurewebsites.net/2.1/laureates?offset=0&limit=1010",
+    "self": "http://nobel-external-api-app.azurewebsites.net/2.1/laureates?offset=0&limit=1010",
+    "next": "http://nobel-external-api-app.azurewebsites.net/2.1/laureates?offset=25&limit=1010",
+    "last": "http://nobel-external-api-app.azurewebsites.net/2.1/laureates?offset=1000&limit=1010"
   }
 }
