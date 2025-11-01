@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # Sentiment Analysis
 
 ## Primary Code Example
-We will first incorporate the primary example code from **https://www.tidytextmining.com/sentiment.html** as it appears on the site. However, some edits have to be made to make the code functional in this markdown. As such, all such edits will be indicated with the comment "NEW".
+We will first incorporate the primary example code from **https://www.tidytextmining.com/sentiment.html** (Robinson) as it appears on the site. However, some edits have to be made to make the code functional in this markdown. As such, all such edits will be indicated with the comment "NEW".
 
 ### 2.1 The sentiments datasets
 ```{r}
@@ -227,6 +227,48 @@ tidy_books %>%
 
 ## Code Extension
 This extension intends to expand on the primary example code by applying the same concepts to a different corpus, whilst introducing an additional sentiment lexicon. 
+
+### Load Libraries
+
+```{r message=FALSE, warning=FALSE}
+library(textdata)
+library(dplyr)
+library(gutenbergr)
+```
+
+### Corpus and Sentiment Lexicon
+We will be using the loughran sentiment lexicon. We will also be using literary works from Project Gutenberg accessed by the R package 'gutenbergr'. The specific works I'll be looking at will be the novels "Tom Sawyer" and "Huckleberry Finn" by Mark Twain.
+<br>
+<br>
+First we'll import the necessary data and text.
+```{r}
+# Sentiment lexicon
+loughran <- get_sentiments("loughran")
+
+# Corpora
+twain_ids <- gutenberg_works(author == "Twain, Mark") #only need to see the ids
+twain_books <- gutenberg_download(c(74, 76))
+```
+
+Tidy the novels
+
+```{r}
+twain_books$book[twain_books$gutenberg_id == 74] <- "THE ADVENTURES OF TOM SAWYER"
+twain_books$book[twain_books$gutenberg_id == 76] <- "ADVENTURES OF HUCKLEBERRY FINN"
+twain_books$gutenberg_id <- NULL
+
+
+twain_tidy_books <- twain_books %>%
+  group_by(book) %>%
+  mutate(
+    linenumber = row_number(),
+    chapter = cumsum(str_detect(text, 
+                                regex("^chapter [\\divxlc]", 
+                                      ignore_case = TRUE)))) %>%
+  ungroup() %>%
+  unnest_tokens(word, text)
+```
+
 
 ## References
 
