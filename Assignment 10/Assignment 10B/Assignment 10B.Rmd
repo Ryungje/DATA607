@@ -154,10 +154,25 @@ laureates %>%
   summarise(
     average.age = mean(age.awarded, na.rm = TRUE),
     youngest = min(age.awarded, na.rm = TRUE),
-    oldest = max(age.awarded, na.rm = TRUE)
+    oldest = max(age.awarded, na.rm = TRUE),
+    total = n()
 )
 ```
 
-From this we can see that on average, Economics Science laureates tend to be older. This raises another interesting question as to why this trend is the case. 
+From this we can see that on average, Economics Science laureates tend to be older. This raises another interesting question as to why this trend is the case. Considering also Economic Sciences has the least number of awarded laureates. 
 
-4. 
+4. On average, which gender receives the higher prize amount?
+
+```{r}
+laureates %>%
+  filter(!is.na(gender)) %>%
+  group_by(gender) %>%
+  summarise(
+    average.amount = mean(prize.amount.adjusted, na.rm = TRUE),
+    smallest = min(prize.amount.adjusted, na.rm = TRUE),
+    largest = max(prize.amount.adjusted, na.rm = TRUE),
+    total = n()
+)
+```
+
+We can see that on average, female laureates are awarded higher amounts, but there is a significant difference between the total number of male and female laureates.
