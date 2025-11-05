@@ -17,6 +17,8 @@ library(RCurl)
 library(jsonlite)
 library(purrr)
 library(httr2)
+library(tidyverse)
+library(lubridate)
 ```
 
 ## Import JSON
@@ -74,4 +76,88 @@ laureates <- laureates_json$laureates %>%
 })
 ```
 
+The final result of this importing and tidying is the dataframe ***laureates*** which contains the information: name, home country, birthday (or founding date), gender, category (of prize), prize amount, and affiliations, and affiliated country. Some of these values don't have data for natural reasons - such as if a laureate was an organization it won't have a gender. But, some other missing values are incomplete from the source. 
 
+## Interesting Questions
+
+<br>
+1. Which country retained the most nobel laureates?
+
+First, create new column to track if home country equals affiliated country, NA's in either column will result in NA.
+```{r}
+# first ifelse is to filter NA's, the second is to compare the columns
+laureates$country.retained <- ifelse(
+  !is.na(laureates$country) &
+    !is.na(laureates$affiliation.country),
+  
+  ifelse(
+    laureates$country == laureates$affiliation.country,
+    "yes",
+    "no"
+  ),
+  
+  NA
+)
+```
+
+Then create summary
+
+```{r}
+laureates %>%
+  filter(!is.na(country)) %>% 
+  group_by(country) %>%
+  summarise(
+    laureates.born = n(),
+    retained = sum(country.retained == "yes", na.rm = TRUE),
+    ratio = retained / laureates.born
+)
+```
+This shows that the USA has the highest retention rate for laureates, with 261 of their 302 naturally born laureates winning the nobel prize while still affiliated with the USA.  
+
+<br>
+2. The second question to be answered will be the one provided in the assignment description.  
+<br>
+Which country “lost” the most nobel laureates (who were born there but received their Nobel prize as a citizen of a different country)?
+
+
+The code looks similar, except the ratio column will be replaced with the difference between laureates born and retained. This will show a better indicator of how many laureates a country lost as compared to ratios.
+
+```{r}
+laureates %>%
+  filter(!is.na(country)) %>% 
+  group_by(country) %>%
+  summarise(
+    laureates.born = n(),
+    retained = sum(country.retained == "yes", na.rm = TRUE),
+    difference = laureates.born - retained
+)
+```
+
+Surprisingly, the USA wins this again with having lost 41 laureates. Though Germany and the UK are tied for second place with 37 laureates lost each. Though, between the two the UK has the higher retention rate.  
+
+<br>
+3. On average, which category of prize of awarded at the highest age?
+
+First create column that indicates age of laureate at time of award.
+
+```{r}
+laureates$age.awarded <- as.numeric(laureates$year.awarded) - 
+  as.numeric(substr(laureates$birthday, 1, 4))
+```
+
+Note that the ages of organizations were ignored, as the question intends to focus on individual laureates. This is achieved by filtering out cases where the gender is NA.
+
+```{r}
+laureates %>%
+  filter(!is.na(gender)) %>%
+  group_by(category) %>%
+  summarise(
+    average.age = mean(age.awarded, na.rm = TRUE),
+    youngest = min(age.awarded, na.rm = TRUE),
+    oldest = max(age.awarded, na.rm = TRUE)
+)
+```
+
+From this we can see that on average, Economics Science laureates tend to be older. This raises another interesting question as to why this trend is the case. 
+
+4. 
