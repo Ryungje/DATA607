@@ -36,7 +36,7 @@ nyc_api <- jsonlite::fromJSON("https://data.cityofnewyork.us/resource/5ebm-myj7.
 
 ## Data Cleaning
 
-Preliminary data cleaning is needed for both data sets. To begin, tidying and cleaning will be performed on each dataset seperately.
+Preliminary data cleaning is needed for both data sets. To begin, tidying and cleaning will be performed on each dataset seperately. Afterwards, further cleaning will be done to make each data set appear more like each other.
 
 ### NYC Rolling Sales
 
@@ -69,8 +69,90 @@ nyc_rolling_sales <- nyc_rolling_sales %>%
   filter(if_all(everything(), ~ !is.na(.) & . != ""))
 ```
 
+### NYC API
+
+For the most part, the ***nyc_api*** dataset is in good order, but there is still some minor cleaning needed. For starters, we will remove the year column. 
+
+```{r nyc-api-column-cleaning}
+nyc_api <- nyc_api %>%
+  select(-year)
+```
+
+Next, modify the borough names.
+
+```{r nyc-api-borough-cleaning}
+nyc_api <- nyc_api %>%
+  mutate(
+    borough = case_when(
+      borough == 1 ~ "Manhattan",
+      borough == 2 ~ "Bronx",
+      borough == 3 ~ "Brooklyn",
+      borough == 4 ~ "Queens",
+      borough == 5 ~ "Staten Island"
+    )
+  )
+```
+
+The last thing to perform on ***nyc_api*** will be adjusting the information in column 'type_of_home' to match those that appear in ***nyc_rolling_sales***.
+
+```{r nyc-api-type-home-cleaning}
+nyc_api <- nyc_api %>%
+  mutate(type_of_home = case_when(
+    grepl("^01[- ]*ONE FAMILY", type_of_home) ~ "01 ONE FAMILY DWELLINGS",
+    grepl("^02[- ]*TWO FAMILY", type_of_home) ~ "02 TWO FAMILY DWELLINGS",
+    grepl("^03[- ]*THREE FAMILY", type_of_home) ~ "03 THREE FAMILY DWELLINGS"
+  ))
+```
+
+The final data cleaning will be done on both dataframes and will be simply renaming the columns to follow one coherent convention.
+
+```{r both-column-name-cleaning}
+
+```
 
 
+## Data Visualization
+
+The data will be visualized in the traditional ways, using plots and graphs, but also using a new function: ggmap. Due to the geographical/locational nature of our data, it is beneficial to be able to display said data on a map. That being said, AI was used during the implementation of ggmap and assisted in teaching us how to use it and some minor implementation cues. 
+
+```{r ggmap-visualization}
+# See scratch code below
+```
+
+
+# References
+
+“NYC Citywide Rolling Calendar Sales: NYC Open Data.” NYC Citywide Rolling Calendar Sales \| NYC Open Data, Department of Finance, 18 Nov. 2025, data.cityofnewyork.us/dataset/NYC-Citywide-Rolling-Calendar-Sales/usep-8jbt/about_data.
+
+
+# SCRATCH CODE
+
+### Personal Notes
+if you guys don't want to get rid of all the missing values, we can take that out
+```{r}
+library(ggmap)
+library(ggplot2)
+
+# e.g. center at approx NYC coordinates
+nyc_center <- c(lon = -74.0060, lat = 40.7128)
+
+# get a map (using Stamen to avoid API-key issues)
+nyc_map <- get_map(location = nyc_center, zoom = 11,
+                   source = "stamen", maptype = "toner-lite")
+
+# plot the map and add points from your data frame
+ggmap(nyc_map) +
+  geom_point(data = nyc_api,
+             aes(x = longitude, y = latitude),
+             colour = "red",
+             alpha = 0.6,
+             size = 2) +
+  labs(title = "NYC data points",
+       x = "Longitude",
+       y = "Latitude") +
+  theme_minimal()
+
+```
 
 
 
