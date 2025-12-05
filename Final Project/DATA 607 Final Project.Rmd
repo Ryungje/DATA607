@@ -36,18 +36,25 @@ nyc_api <- jsonlite::fromJSON("https://data.cityofnewyork.us/resource/5ebm-myj7.
 
 ## Data Cleaning
 
-Preliminary data cleaning is needed for both data sets. To begin, tidying and cleaning will be performed on each dataset seperately. Afterwards, further cleaning will be done to make each data set appear more like each other.
+Preliminary data cleaning is needed for both data sets. To begin, tidying and cleaning will be performed on each data set separately. Afterwards, further cleaning will be done to make each data set appear more like each other.
 
 ### NYC Rolling Sales
 
-Begin by removing columns that contain little to no information (i.e. are plagued with NA's). Then, we will also remove columns that contain information irrelevant to our goals. Note that some of the columns state information at present and during time of sale, we will drop the former.
+Begin by creating a new column to store address information. This will be used later in the data visualization stage and ggmap incorporation.
+
+```{r rolling-sales-address}
+nyc_rolling_sales <- nyc_rolling_sales %>%
+  mutate(address = as.character(paste(ADDRESS, ZIP.CODE, "NY")))
+```
+
+Secondly, remove columns that contain little to no information (i.e. are plagued with NA's). Then, we will also remove columns that contain information irrelevant to our goals. Note that some of the columns state information at present and during time of sale, we will drop the former.
 
 ```{r rolling-sales-column-cleaning}
 nyc_rolling_sales <- nyc_rolling_sales %>%
   select(-EASE.MENT, -APARTMENT.NUMBER, -BUILDING.CLASS.AT.PRESENT, -SALE.DATE, -RESIDENTIAL.UNITS, -COMMERCIAL.UNITS, -LOT, -BLOCK, -TAX.CLASS.AT.PRESENT, -ZIP.CODE, -ADDRESS) 
 ```
 
-Next, information in the 'Borough' column will be changed to state the actual name of the borough an not its BBL designation. For reference:<br> 1 - Manhatten<br> 2 - Bronx<br> 3 - Brooklyn<br> 4 - Queens<br> 5 - Staten Island.
+Next, information in the 'Borough' column will be changed to state the actual name of the borough an not its BBL designation. For reference:<br> 1 - Manhattan<br> 2 - Bronx<br> 3 - Brooklyn<br> 4 - Queens<br> 5 - Staten Island.
 
 ```{r rolling-sales-borough-cleaning}
 nyc_rolling_sales <- nyc_rolling_sales %>%
@@ -62,7 +69,7 @@ nyc_rolling_sales <- nyc_rolling_sales %>%
   )
 ```
 
-The last thing to perform on ***nyc_rolling_sales*** will be removing any rows that contain any missing values in any of the columns. The motivation for this is to drastically cut down on analysis frustrations that may come up later. 
+The last thing to perform on ***nyc_rolling_sales*** will be removing any rows that contain any missing values in any of the columns. The motivation for this is to drastically cut down on analysis frustrations that may come up later.
 
 ```{r rolling-sales-missing-cleaning}
 nyc_rolling_sales <- nyc_rolling_sales %>%
@@ -71,11 +78,14 @@ nyc_rolling_sales <- nyc_rolling_sales %>%
 
 ### NYC API
 
-For the most part, the ***nyc_api*** dataset is in good order, but there is still some minor cleaning needed. For starters, we will remove the year column. 
+For the most part, the ***nyc_api*** data set is in good order, but there is still some minor cleaning needed. For starters, we will remove the year column. The missing values will also be handled at this step.
 
 ```{r nyc-api-column-cleaning}
 nyc_api <- nyc_api %>%
   select(-year)
+
+nyc_api <- nyc_api %>%
+  filter(if_all(everything(), ~ !is.na(.) & . != ""))
 ```
 
 Next, modify the borough names.
@@ -107,52 +117,20 @@ nyc_api <- nyc_api %>%
 The final data cleaning will be done on both dataframes and will be simply renaming the columns to follow one coherent convention.
 
 ```{r both-column-name-cleaning}
+colnames(nyc_rolling_sales) <- c("borough", "neighborhood", "building category", "total units", "land square feet", "gross square feet", "year built", "tax class", "building class", "sale price", "address")
 
+colnames(nyc_api) <- c("borough", "neighborhood", "building category", "number of sales", "lowest sale price", "average sale price", "median sale price", "highest sale price")
 ```
-
 
 ## Data Visualization
 
-The data will be visualized in the traditional ways, using plots and graphs, but also using a new function: ggmap. Due to the geographical/locational nature of our data, it is beneficial to be able to display said data on a map. That being said, AI was used during the implementation of ggmap and assisted in teaching us how to use it and some minor implementation cues. 
+The data will be visualized in the traditional ways, using plots and graphs, but also using a new function: ggmap. Due to the geographical nature of our data, it is beneficial to be able to display said data on a map. That being said, AI was used during the implementation of ggmap and assisted in teaching us how to use it and some minor implementation cues.
 
 ```{r ggmap-visualization}
 # See scratch code below
 ```
 
-
 # References
 
 “NYC Citywide Rolling Calendar Sales: NYC Open Data.” NYC Citywide Rolling Calendar Sales \| NYC Open Data, Department of Finance, 18 Nov. 2025, data.cityofnewyork.us/dataset/NYC-Citywide-Rolling-Calendar-Sales/usep-8jbt/about_data.
-
-
-# SCRATCH CODE
-
-### Personal Notes
-if you guys don't want to get rid of all the missing values, we can take that out
-```{r}
-library(ggmap)
-library(ggplot2)
-
-# e.g. center at approx NYC coordinates
-nyc_center <- c(lon = -74.0060, lat = 40.7128)
-
-# get a map (using Stamen to avoid API-key issues)
-nyc_map <- get_map(location = nyc_center, zoom = 11,
-                   source = "stamen", maptype = "toner-lite")
-
-# plot the map and add points from your data frame
-ggmap(nyc_map) +
-  geom_point(data = nyc_api,
-             aes(x = longitude, y = latitude),
-             colour = "red",
-             alpha = 0.6,
-             size = 2) +
-  labs(title = "NYC data points",
-       x = "Longitude",
-       y = "Latitude") +
-  theme_minimal()
-
-```
-
-
 
