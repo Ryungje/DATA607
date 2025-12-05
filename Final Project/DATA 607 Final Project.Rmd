@@ -1,0 +1,54 @@
+---
+title: "DATA 607 Final Project"
+author: "James Chun, Pricilla Nakyazze, Haoming Chen"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# New York City Property Market
+
+## Overview 
+
+This project seeks to research NYC property sales patterns and identify which features may affect sales prices. Such features may include neighborhood, building type, land/gross square footage, tax class and year built. Our goal is to uncover the price distribution in the citywide and trends that could help predict future property values. 
+
+Two data sources will be used: a csv file of NYC rolling sales (***citation needed***) and the City of New York API endpoint (Department of Finance). The workflow will include importing data, tidying and cleaning the data, followed by summary statistics, visualizations, analysis and conclusions. One new feature we plan to use is ggmap. This R package perfectly matches our project as it can map NYC property prices to visualize distribution citywide.
+
+Although a database and diagram are not required by the checklist, we still design a MySQL database to store data for its convenience.
+
+## Libraries
+```{r message=FALSE}
+library(tidyverse)
+```
+
+## Import Data
+
+As mentioned before, the main datasets we will be using are NYC rolling sales CSV and City of New York API. 
+
+```{r}
+nyc_rolling_sales <- read.csv("https://raw.githubusercontent.com/vincent-usny/607-final-/refs/heads/main/NYC_Rolling_Sales.csv")
+
+nyc_api <- jsonlite::fromJSON("https://data.cityofnewyork.us/resource/5ebm-myj7.json?$limit=10000")
+```
+
+## Data Cleaning
+
+Preliminary data cleaning is needed for both data sets. To begin, tidying and cleaning will be performed on each dataset seperately.
+
+### NYC Rolling Sales
+
+Begin by removing columns that contain little to no information (i.e. are plagued with NA's). Then, we will also remove columns that contain information irrelevant to our goals. 
+
+```{r rolling-sales-cleaning}
+nyc_rolling_sales <- nyc_rolling_sales %>%
+  select(-EASE.MENT, -APARTMENT.NUMBER, ) 
+```
+
+
+
+
+# References
+
+“NYC Citywide Rolling Calendar Sales: NYC Open Data.” NYC Citywide Rolling Calendar Sales | NYC Open Data, Department of Finance, 18 Nov. 2025, data.cityofnewyork.us/dataset/NYC-Citywide-Rolling-Calendar-Sales/usep-8jbt/about_data. 
